@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USB Direct Share</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="app-title">USB Direct Share</div>
+            <ul class="nav-links">
+                <li class="active" data-tab="status">Status</li>
+                <li data-tab="my-pc">My PC</li>
+                <li data-tab="phone-files">Phone Files</li>
+                <li data-tab="help">Help</li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+
+            <!-- Status Tab -->
+            <section id="status" class="tab-content active">
+                <div class="card status-card">
+                    <h2>Server Status</h2>
+                    <div class="toggle-container">
+                        <button id="toggle-server-btn" class="btn primary">Start Server</button>
+                    </div>
+
+                    <div id="server-details" class="details hidden">
+                        <p><strong>Status:</strong> <span class="status-running">Running</span></p>
+                        <p><strong>Address:</strong> <span id="server-address">http://0.0.0.0:8080</span></p>
+                        <p><strong>Username:</strong> <span id="server-username">usbshare</span></p>
+                        <p><strong>Password:</strong> <span id="server-password"></span></p>
+
+                        <div class="qr-placeholder">
+                            <p>Map this as a Network Drive on your phone or other PCs on the network using the credentials above.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- My PC Tab -->
+            <section id="my-pc" class="tab-content">
+                <div class="toolbar">
+                    <button id="select-root-btn" class="btn secondary">Select Shared Folder</button>
+                    <span id="current-root-path" class="path-display">No folder selected</span>
+                </div>
+
+                <div class="toolbar actions hidden" id="pc-actions">
+                    <button id="pc-refresh-btn" class="btn secondary">Refresh</button>
+                    <button id="pc-mkdir-btn" class="btn secondary">New Folder</button>
+                    <button id="pc-zip-btn" class="btn secondary">Download Zip</button>
+                    <button id="pc-delete-btn" class="btn danger">Delete</button>
+                </div>
+
+                <div class="file-browser" id="pc-file-browser">
+                    <div class="breadcrumb" id="pc-breadcrumb">/</div>
+                    <ul class="file-list" id="pc-file-list">
+                        <li class="empty-state">Select a shared folder to start.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Phone Files Tab -->
+            <section id="phone-files" class="tab-content">
+                <div class="card connection-card" id="phone-connection-card">
+                    <h2>Connect to Phone</h2>
+                    <p>Ensure your phone's USB tethering is enabled and the "USB Direct Share" app server is running.</p>
+
+                    <div class="form-group">
+                        <button id="auto-discover-btn" class="btn primary">Auto Discover</button>
+                        <span id="discover-status"></span>
+                    </div>
+
+                    <div class="divider">OR</div>
+
+                    <div class="form-group">
+                        <input type="text" id="manual-ip" placeholder="Phone IP (e.g., 192.168.42.129)">
+                        <input type="text" id="manual-pass" placeholder="Password from phone app">
+                        <button id="manual-connect-btn" class="btn secondary">Connect</button>
+                    </div>
+                </div>
+
+                <div class="browser-container hidden" id="phone-browser-container">
+                    <div class="toolbar">
+                        <span class="path-display">Connected to Phone</span>
+                        <button id="disconnect-btn" class="btn danger">Disconnect</button>
+                    </div>
+                    <div class="toolbar actions">
+                        <button id="phone-refresh-btn" class="btn secondary">Refresh</button>
+                        <button id="phone-upload-btn" class="btn primary">Upload to Phone</button>
+                        <button id="phone-mkdir-btn" class="btn secondary">New Folder</button>
+                        <button id="phone-download-btn" class="btn secondary">Download from Phone</button>
+                        <button id="phone-delete-btn" class="btn danger">Delete</button>
+                    </div>
+
+                    <div class="progress-bar-container hidden" id="phone-progress-container">
+                        <div class="progress-info" id="phone-progress-text">Uploading...</div>
+                        <div class="progress-bar"><div class="progress-fill" id="phone-progress-fill"></div></div>
+                    </div>
+
+                    <div class="file-browser" id="phone-file-browser">
+                        <div class="breadcrumb" id="phone-breadcrumb">/</div>
+                        <ul class="file-list" id="phone-file-list">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Help Tab -->
+            <section id="help" class="tab-content">
+                <div class="card help-card">
+                    <h2>Map Phone as Windows Network Drive</h2>
+                    <p>You can access your phone directly from Windows Explorer without this companion app if you prefer, by mapping it as a Network Drive over WebDAV.</p>
+
+                    <h3>Steps:</h3>
+                    <ol>
+                        <li>Start the server on your Android phone via the app.</li>
+                        <li>Note the IP address and credentials shown on the phone screen.</li>
+                        <li>Open Windows Explorer > "This PC".</li>
+                        <li>Click "Map network drive" in the top ribbon (or "..." menu).</li>
+                        <li>Choose a drive letter and enter the phone's address (e.g. <code>http://192.168.42.129:8080/</code>).</li>
+                        <li>Check "Connect using different credentials".</li>
+                        <li>Click "Finish", then enter <code>usbshare</code> as the username and the password shown on your phone.</li>
+                    </ol>
+
+                    <div class="warning-box">
+                        <h4>Windows WebDAV Basic Auth Fix</h4>
+                        <p>Windows by default refuses to send Basic Auth credentials over non-HTTPS connections. Since this works locally over USB, you must allow it by changing a registry key.</p>
+                        <p>Run these exact commands in an Administrator PowerShell:</p>
+                        <pre><code>Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\WebClient\Parameters" -Name "BasicAuthLevel" -Value 2
+Restart-Service WebClient</code></pre>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>
