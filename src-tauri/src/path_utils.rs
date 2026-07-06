@@ -12,7 +12,7 @@ pub fn resolve_and_verify_path(root_path: &Path, request_path: &str) -> Option<P
 
     // Join with root
     let full_path = root_path.join(clean_request);
-
+    
     // Canonicalize both
     let canonical_root = root_path.canonicalize().ok()?;
     let canonical_full = full_path.canonicalize().ok()?;
@@ -35,9 +35,9 @@ pub fn resolve_and_verify_path_for_creation(root_path: &Path, request_path: &str
     let clean_request = clean_request.trim_start_matches('/');
 
     let full_path = root_path.join(clean_request);
-
+    
     let canonical_root = root_path.canonicalize().ok()?;
-
+    
     // Since the target might not exist, we can't canonicalize it directly.
     // Instead, canonicalize its parent, verify the parent, and then join the file name.
     if let Some(parent) = full_path.parent() {
@@ -51,7 +51,7 @@ pub fn resolve_and_verify_path_for_creation(root_path: &Path, request_path: &str
             }
         }
     }
-
+    
     None
 }
 
@@ -70,13 +70,13 @@ mod tests {
 
         let share_dir = temp_dir.join("Share");
         let sibling_dir = temp_dir.join("ShareBackup");
-
+        
         fs::create_dir(&share_dir).unwrap();
         fs::create_dir(&sibling_dir).unwrap();
-
+        
         let valid_file = share_dir.join("valid.txt");
         fs::write(&valid_file, "hello").unwrap();
-
+        
         let sibling_file = sibling_dir.join("secret.txt");
         fs::write(&sibling_file, "secret").unwrap();
 
@@ -91,21 +91,21 @@ mod tests {
         // 3. Absolute path attempt
         let absolute_req = sibling_file.to_string_lossy().to_string();
         let traversal2 = resolve_and_verify_path(&share_dir, &absolute_req);
-        // Depending on Path::join behavior with absolute paths on different OS,
+        // Depending on Path::join behavior with absolute paths on different OS, 
         // it might replace the base. The starts_with check will catch it.
         assert!(traversal2.is_none());
 
         // 4. Creation valid
         let creation_valid = resolve_and_verify_path_for_creation(&share_dir, "new_folder/new_file.txt");
-        // new_folder doesn't exist yet, so canonicalize of parent will fail.
+        // new_folder doesn't exist yet, so canonicalize of parent will fail. 
         // We should test creation in an existing parent.
         let creation_valid_existing_parent = resolve_and_verify_path_for_creation(&share_dir, "new_file.txt").unwrap();
         assert_eq!(creation_valid_existing_parent, share_dir.canonicalize().unwrap().join("new_file.txt"));
-
+        
         // 5. Creation traversal attempt
         let creation_traversal = resolve_and_verify_path_for_creation(&share_dir, "../ShareBackup/new_file.txt");
         assert!(creation_traversal.is_none());
-
+        
         // Cleanup
         let _ = fs::remove_dir_all(&temp_dir);
     }

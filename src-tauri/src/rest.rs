@@ -41,7 +41,7 @@ pub async fn list_files(
     Query(query): Query<PathQuery>,
 ) -> Result<Json<Vec<FileInfo>>, StatusCode> {
     let req_path = query.path.unwrap_or_else(|| "/".to_string());
-
+    
     let root_path = {
         let st = state.lock().unwrap();
         st.root_path.clone()
@@ -59,7 +59,7 @@ pub async fn list_files(
     while let Ok(Some(entry)) = entries.next_entry().await {
         let meta = entry.metadata().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         let name = entry.file_name().to_string_lossy().to_string();
-
+        
         // Construct relative path
         let rel_path = if req_path == "/" {
             format!("/{}", name)
@@ -301,22 +301,22 @@ pub async fn zip_files(
     match result {
         Ok(Ok(_)) => {
             let serve_file = ServeFile::new(&temp_zip_path);
-
+            
             // Clean up the temp file after a short delay so it can be served
             let temp_cleanup_path = temp_zip_path.clone();
             tokio::spawn(async move {
                 tokio::time::sleep(std::time::Duration::from_secs(30)).await;
                 let _ = tokio::fs::remove_file(temp_cleanup_path).await;
             });
-
+            
             let mut res = match serve_file.oneshot(req).await {
                 Ok(res) => res.into_response(),
                 Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
             };
-
+            
             res.headers_mut().insert(header::CONTENT_TYPE, "application/zip".parse().unwrap());
             res.headers_mut().insert(header::CONTENT_DISPOSITION, "attachment; filename=\"download.zip\"".parse().unwrap());
-
+            
             res
         },
         _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),

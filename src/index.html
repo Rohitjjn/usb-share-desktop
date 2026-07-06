@@ -21,7 +21,7 @@
 
         <!-- Main Content Area -->
         <main class="content-area">
-
+            
             <!-- Status Tab -->
             <section id="status" class="tab-content active">
                 <div class="card status-card">
@@ -29,13 +29,13 @@
                     <div class="toggle-container">
                         <button id="toggle-server-btn" class="btn primary">Start Server</button>
                     </div>
-
+                    
                     <div id="server-details" class="details hidden">
                         <p><strong>Status:</strong> <span class="status-running">Running</span></p>
                         <p><strong>Address:</strong> <span id="server-address">http://0.0.0.0:8080</span></p>
                         <p><strong>Username:</strong> <span id="server-username">usbshare</span></p>
                         <p><strong>Password:</strong> <span id="server-password"></span></p>
-
+                        
                         <div class="qr-placeholder">
                             <p>Map this as a Network Drive on your phone or other PCs on the network using the credentials above.</p>
                         </div>
@@ -49,7 +49,7 @@
                     <button id="select-root-btn" class="btn secondary">Select Shared Folder</button>
                     <span id="current-root-path" class="path-display">No folder selected</span>
                 </div>
-
+                
                 <div class="toolbar actions hidden" id="pc-actions">
                     <button id="pc-refresh-btn" class="btn secondary">Refresh</button>
                     <button id="pc-mkdir-btn" class="btn secondary">New Folder</button>
@@ -70,7 +70,7 @@
                 <div class="card connection-card" id="phone-connection-card">
                     <h2>Connect to Phone</h2>
                     <p>Ensure your phone's USB tethering is enabled and the "USB Direct Share" app server is running.</p>
-
+                    
                     <div class="form-group">
                         <button id="auto-discover-btn" class="btn primary">Auto Discover</button>
                         <span id="discover-status"></span>
@@ -117,7 +117,7 @@
                 <div class="card help-card">
                     <h2>Map Phone as Windows Network Drive</h2>
                     <p>You can access your phone directly from Windows Explorer without this companion app if you prefer, by mapping it as a Network Drive over WebDAV.</p>
-
+                    
                     <h3>Steps:</h3>
                     <ol>
                         <li>Start the server on your Android phone via the app.</li>
@@ -138,7 +138,7 @@ Restart-Service WebClient</code></pre>
                     </div>
                 </div>
             </section>
-
+            
         </main>
     </div>
 

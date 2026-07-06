@@ -15,9 +15,9 @@ impl PhoneClient {
             .timeout(Duration::from_secs(30))
             .build()
             .unwrap_or_default();
-
+            
         let base_url = format!("http://{}:{}", ip, port);
-
+        
         let auth = format!("{}:{}", user, pass);
         let b64_auth = general_purpose::STANDARD.encode(auth);
         let auth_header = format!("Basic {}", b64_auth);
@@ -87,11 +87,11 @@ impl PhoneClient {
         Ok(())
     }
 
-    // For larger files, we might want streaming download/upload via frontend,
+    // For larger files, we might want streaming download/upload via frontend, 
     // but we can provide simple rust wrappers if needed by Tauri commands.
-    // For now, returning the base_url and auth_header so frontend can fetch directly is better
+    // For now, returning the base_url and auth_header so frontend can fetch directly is better 
     // because it natively handles streaming, progress events, and saving via native dialogs.
-
+    
     pub fn get_connection_info(&self) -> (String, String) {
         (self.base_url.clone(), self.auth_header.clone())
     }

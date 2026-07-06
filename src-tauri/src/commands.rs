@@ -52,15 +52,15 @@ pub async fn start_local_server(
 
     let ip = get_local_ip().unwrap_or_else(|| "127.0.0.1".to_string());
     let port = 8080;
-
+    
     // Bind address
     let bind_ip: IpAddr = ip.parse().unwrap_or(std::net::Ipv4Addr::UNSPECIFIED.into());
     let addr = SocketAddr::new(bind_ip, port);
 
     let state_clone = Arc::clone(&state.state);
-
+    
     let (tx, rx) = tokio::sync::oneshot::channel::<()>();
-
+    
     *handle.abort_tx.lock().unwrap() = Some(tx);
 
     tokio::spawn(async move {
@@ -115,10 +115,10 @@ pub async fn discover_phone_cmd() -> Result<String, String> {
     if parts.len() != 4 {
         return Err("Invalid local IP format".to_string());
     }
-
+    
     let subnet = format!("{}.{}.{}.", parts[0], parts[1], parts[2]);
     let port = 8080;
-
+    
     if let Some(ip) = discover_phone(&subnet, port).await {
         Ok(ip)
     } else {

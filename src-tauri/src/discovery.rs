@@ -15,7 +15,7 @@ pub async fn discover_phone(subnet: &str, port: u16) -> Option<String> {
     for i in 1..=254 {
         let ip = format!("{}{}", subnet, i);
         let client_clone = client.clone();
-
+        
         let task = tokio::spawn(async move {
             let url = format!("http://{}:{}/api/ping", ip, port);
             if let Ok(Ok(response)) = timeout(Duration::from_millis(500), client_clone.get(&url).send()).await {

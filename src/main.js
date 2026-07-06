@@ -28,7 +28,7 @@ function switchTab(tabId) {
 
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
-
+    
     currentTab = tabId;
 }
 
@@ -36,7 +36,7 @@ function switchTab(tabId) {
 function setupStatusTab() {
     const toggleBtn = document.getElementById('toggle-server-btn');
     const detailsDiv = document.getElementById('server-details');
-
+    
     toggleBtn.addEventListener('click', async () => {
         if (isServerRunning) {
             try {
@@ -63,23 +63,23 @@ function setupStatusTab() {
                     return; // Cancelled
                 }
             }
-
+            
             try {
                 toggleBtn.textContent = 'Starting...';
                 toggleBtn.disabled = true;
-
+                
                 const status = await invoke('start_local_server', { rootPathStr: sharedRootPath });
-
+                
                 isServerRunning = true;
                 toggleBtn.textContent = 'Stop Server';
                 toggleBtn.classList.remove('primary');
                 toggleBtn.classList.add('danger');
                 toggleBtn.disabled = false;
-
+                
                 document.getElementById('server-address').textContent = `http://${status.ip}:${status.port}/`;
                 document.getElementById('server-username').textContent = status.username;
                 document.getElementById('server-password').textContent = status.password;
-
+                
                 detailsDiv.classList.remove('hidden');
             } catch (e) {
                 console.error(e);
@@ -104,7 +104,7 @@ function setupMyPcTab() {
     const mkdirBtn = document.getElementById('pc-mkdir-btn');
     const deleteBtn = document.getElementById('pc-delete-btn');
     const zipBtn = document.getElementById('pc-zip-btn');
-
+    
     selectRootBtn.addEventListener('click', async () => {
         const selected = await open({ directory: true, multiple: false });
         if (selected) {
@@ -112,7 +112,7 @@ function setupMyPcTab() {
             document.getElementById('current-root-path').textContent = sharedRootPath;
             document.getElementById('pc-actions').classList.remove('hidden');
             currentPcPath = '/';
-
+            
             // If server is running, we should restart it or just load files
             // For simplicity, we just fetch files natively via a command or locally via fetch
             // But since our server might not be running on loopback, we can just fetch via localhost:8080 if running.
@@ -144,7 +144,7 @@ function setupMyPcTab() {
     deleteBtn.addEventListener('click', async () => {
         if (selectedPcFiles.size === 0) return;
         if (!confirm(`Delete ${selectedPcFiles.size} item(s)?`)) return;
-
+        
         for (const path of selectedPcFiles) {
             await authFetch(`http://127.0.0.1:8080/api/delete?path=${encodeURIComponent(path)}`, { method: 'POST' });
         }
@@ -159,7 +159,7 @@ function setupMyPcTab() {
         }
         const paths = Array.from(selectedPcFiles).join(',');
         const url = `http://127.0.0.1:8080/api/zip?paths=${encodeURIComponent(paths)}`;
-
+        
         // Use browser download
         const a = document.createElement('a');
         a.href = url;
@@ -182,10 +182,10 @@ function renderPcEmpty(msg) {
 async function authFetch(url, options = {}) {
     const username = document.getElementById('server-username').textContent;
     const password = document.getElementById('server-password').textContent;
-
+    
     if (!options.headers) options.headers = {};
     options.headers['Authorization'] = 'Basic ' + btoa(username + ':' + password);
-
+    
     const res = await fetch(url, options);
     if (!res.ok) throw new Error(res.statusText);
     return res;
@@ -195,22 +195,22 @@ async function loadPcFiles(path) {
     try {
         const res = await authFetch(`http://127.0.0.1:8080/api/list?path=${encodeURIComponent(path)}`);
         const files = await res.json();
-
+        
         selectedPcFiles.clear();
         currentPcPath = path;
-
+        
         // Update breadcrumb
         const breadcrumb = document.getElementById('pc-breadcrumb');
         breadcrumb.innerHTML = '';
-
+        
         const parts = path.split('/').filter(p => p);
         let accumulated = '';
-
+        
         const rootSpan = document.createElement('span');
         rootSpan.textContent = '/';
         rootSpan.onclick = () => loadPcFiles('/');
         breadcrumb.appendChild(rootSpan);
-
+        
         for (const part of parts) {
             accumulated += '/' + part;
             const span = document.createElement('span');
@@ -222,7 +222,7 @@ async function loadPcFiles(path) {
 
         const list = document.getElementById('pc-file-list');
         list.innerHTML = '';
-
+        
         if (path !== '/') {
             const upLi = document.createElement('li');
             upLi.innerHTML = `<span class="file-icon">📁</span><span class="file-name">..</span>`;
@@ -252,7 +252,7 @@ async function loadPcFiles(path) {
                 <span class="file-name">${f.name}</span>
                 <span class="file-size">${f.is_dir ? '' : formatBytes(f.size)}</span>
             `;
-
+            
             li.onclick = (e) => {
                 if (e.ctrlKey || e.metaKey) {
                     // Multi-select
@@ -321,7 +321,7 @@ function setupPhoneTab() {
     const manualConnectBtn = document.getElementById('manual-connect-btn');
     const disconnectBtn = document.getElementById('disconnect-btn');
     const statusSpan = document.getElementById('discover-status');
-
+    
     autoDiscoverBtn.addEventListener('click', async () => {
         statusSpan.textContent = "Scanning network...";
         autoDiscoverBtn.disabled = true;
@@ -339,7 +339,7 @@ function setupPhoneTab() {
     manualConnectBtn.addEventListener('click', async () => {
         const ip = document.getElementById('manual-ip').value.trim();
         const pass = document.getElementById('manual-pass').value.trim();
-
+        
         if (!ip || !pass) {
             alert("Please enter IP and password");
             return;
@@ -355,7 +355,7 @@ function setupPhoneTab() {
         try {
             // Test connection
             await phoneFetch(`/api/list?path=/`);
-
+            
             phoneConnected = true;
             document.getElementById('phone-connection-card').classList.add('hidden');
             document.getElementById('phone-browser-container').classList.remove('hidden');
@@ -375,7 +375,7 @@ function setupPhoneTab() {
 
     // Browser actions
     document.getElementById('phone-refresh-btn').addEventListener('click', () => loadPhoneFiles(currentPhonePath));
-
+    
     document.getElementById('phone-mkdir-btn').addEventListener('click', async () => {
         const name = prompt("Enter new folder name:");
         if (name && phoneConnected) {
@@ -388,7 +388,7 @@ function setupPhoneTab() {
     document.getElementById('phone-delete-btn').addEventListener('click', async () => {
         if (selectedPhoneFiles.size === 0) return;
         if (!confirm(`Delete ${selectedPhoneFiles.size} item(s) from phone?`)) return;
-
+        
         for (const path of selectedPhoneFiles) {
             await phoneFetch(`/api/delete?path=${encodeURIComponent(path)}`, { method: 'POST' });
         }
@@ -403,53 +403,53 @@ function setupPhoneTab() {
         }
         const paths = Array.from(selectedPhoneFiles).join(',');
         const a = document.createElement('a');
-
+        
         const credentials = atob(phoneAuthHeader.split(' ')[1]);
         const ipPort = phoneBaseUrl.replace('http://', '');
-
+        
         a.href = `http://${credentials}@${ipPort}/api/zip?paths=${encodeURIComponent(paths)}`;
         a.download = "phone_download.zip";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
     });
-
+    
     document.getElementById('phone-upload-btn').addEventListener('click', async () => {
         const selected = await open({ multiple: true, directory: false });
         if (!selected || selected.length === 0) return;
-
+        
         // Use Tauri's read function and upload via fetch
         const { readFile } = window.__TAURI__.fs;
         const { basename } = window.__TAURI__.path;
-
+        
         const progContainer = document.getElementById('phone-progress-container');
         const progFill = document.getElementById('phone-progress-fill');
         const progText = document.getElementById('phone-progress-text');
-
+        
         progContainer.classList.remove('hidden');
-
+        
         for (let i = 0; i < selected.length; i++) {
             const filePath = selected[i];
             const fileName = await basename(filePath);
             progText.textContent = `Uploading ${fileName} (${i+1}/${selected.length})...`;
-
+            
             try {
                 const contents = await readFile(filePath);
                 const targetPath = currentPhonePath === '/' ? `/${fileName}` : `${currentPhonePath}/${fileName}`;
-
+                
                 await phoneFetch(`/api/upload?path=${encodeURIComponent(targetPath)}`, {
                     method: 'POST',
                     body: contents,
                     headers: { 'Content-Type': 'application/octet-stream' }
                 });
-
+                
                 progFill.style.width = `${((i + 1) / selected.length) * 100}%`;
             } catch (e) {
                 console.error("Upload error", e);
                 alert(`Failed to upload ${fileName}: ` + e);
             }
         }
-
+        
         setTimeout(() => {
             progContainer.classList.add('hidden');
             progFill.style.width = '0%';
@@ -462,7 +462,7 @@ async function phoneFetch(endpoint, options = {}) {
     const url = phoneBaseUrl + endpoint;
     if (!options.headers) options.headers = {};
     options.headers['Authorization'] = phoneAuthHeader;
-
+    
     const res = await fetch(url, options);
     if (!res.ok) throw new Error(res.statusText);
     return res;
@@ -472,22 +472,22 @@ async function loadPhoneFiles(path) {
     try {
         const res = await phoneFetch(`/api/list?path=${encodeURIComponent(path)}`);
         const files = await res.json();
-
+        
         selectedPhoneFiles.clear();
         currentPhonePath = path;
-
+        
         // Update breadcrumb
         const breadcrumb = document.getElementById('phone-breadcrumb');
         breadcrumb.innerHTML = '';
-
+        
         const parts = path.split('/').filter(p => p);
         let accumulated = '';
-
+        
         const rootSpan = document.createElement('span');
         rootSpan.textContent = '/';
         rootSpan.onclick = () => loadPhoneFiles('/');
         breadcrumb.appendChild(rootSpan);
-
+        
         for (const part of parts) {
             accumulated += '/' + part;
             const span = document.createElement('span');
@@ -499,7 +499,7 @@ async function loadPhoneFiles(path) {
 
         const list = document.getElementById('phone-file-list');
         list.innerHTML = '';
-
+        
         if (path !== '/') {
             const upLi = document.createElement('li');
             upLi.innerHTML = `<span class="file-icon">📁</span><span class="file-name">..</span>`;
@@ -529,7 +529,7 @@ async function loadPhoneFiles(path) {
                 <span class="file-name">${f.name}</span>
                 <span class="file-size">${f.is_dir ? '' : formatBytes(f.size)}</span>
             `;
-
+            
             li.onclick = (e) => {
                 if (e.ctrlKey || e.metaKey) {
                     if (selectedPhoneFiles.has(f.path)) {

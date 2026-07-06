@@ -49,7 +49,7 @@ pub async fn basic_auth(
         if let Some(auth_header) = req.headers().get(header::AUTHORIZATION) {
             if let Ok(auth_str) = auth_header.to_str() {
                 if let Some(b64_creds) = auth_str.strip_prefix("Basic ") {
-
+                    
                     if let Ok(decoded) = general_purpose::STANDARD.decode(b64_creds) {
                         if let Ok(decoded_str) = String::from_utf8(decoded) {
                             let parts: Vec<&str> = decoded_str.splitn(2, ':').collect();
@@ -111,14 +111,14 @@ mod tests {
             root_path: PathBuf::from("."),
             credentials: Some(("admin".to_string(), "pass".to_string())),
         }));
-
+        
         let app = build_app(state).await;
-
+        
         let response = app
             .oneshot(Request::builder().uri("/api/ping").body(axum::body::Body::empty()).unwrap())
             .await
             .unwrap();
-
+            
         assert_eq!(response.status(), StatusCode::OK);
     }
 
@@ -128,14 +128,14 @@ mod tests {
             root_path: PathBuf::from("."),
             credentials: Some(("admin".to_string(), "pass".to_string())),
         }));
-
+        
         let app = build_app(state).await;
-
+        
         let response = app
             .oneshot(Request::builder().uri("/api/list?path=/").body(axum::body::Body::empty()).unwrap())
             .await
             .unwrap();
-
+            
         assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
         assert!(response.headers().contains_key(header::WWW_AUTHENTICATE));
     }

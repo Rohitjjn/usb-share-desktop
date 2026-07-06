@@ -69,7 +69,7 @@ async fn handle_propfind(root_path: &Path, request_path: &str, req: Request<Body
 
     let mut writer = Writer::new(Cursor::new(Vec::new()));
     writer.write_event(Event::Decl(BytesDecl::new("1.0", Some("utf-8"), None))).unwrap();
-
+    
     let mut multistatus = BytesStart::new("D:multistatus");
     multistatus.push_attribute(("xmlns:D", "DAV:"));
     writer.write_event(Event::Start(multistatus)).unwrap();
@@ -108,7 +108,7 @@ async fn handle_propfind(root_path: &Path, request_path: &str, req: Request<Body
 
 fn write_response(writer: &mut Writer<Cursor<Vec<u8>>>, request_path: &str, meta: &std::fs::Metadata) {
     writer.write_event(Event::Start(BytesStart::new("D:response"))).unwrap();
-
+    
     // href
     writer.write_event(Event::Start(BytesStart::new("D:href"))).unwrap();
     let mut href = String::from(request_path);
@@ -145,13 +145,13 @@ fn write_response(writer: &mut Writer<Cursor<Vec<u8>>>, request_path: &str, meta
     }
 
     writer.write_event(Event::End(BytesEnd::new("D:prop"))).unwrap();
-
+    
     writer.write_event(Event::Start(BytesStart::new("D:status"))).unwrap();
     writer.write_event(Event::Text(BytesText::new("HTTP/1.1 200 OK"))).unwrap();
     writer.write_event(Event::End(BytesEnd::new("D:status"))).unwrap();
-
+    
     writer.write_event(Event::End(BytesEnd::new("D:propstat"))).unwrap();
-
+    
     writer.write_event(Event::End(BytesEnd::new("D:response"))).unwrap();
 }
 
@@ -168,7 +168,7 @@ async fn handle_get(root_path: &Path, request_path: &str, req: Request<Body>) ->
     // Using tower_http::services::fs::ServeFile for range request support
     use tower_http::services::fs::ServeFile;
     use tower::ServiceExt;
-
+    
     let serve_file = ServeFile::new(resolved_path);
     match serve_file.oneshot(req).await {
         Ok(res) => res.into_response(),
@@ -258,7 +258,7 @@ async fn handle_move(root_path: &Path, request_path: &str, req: Request<Body>) -
         Ok(u) => u,
         Err(_) => return StatusCode::BAD_REQUEST.into_response(),
     };
-
+    
     let dest_req_path = percent_decode_str(dest_url.path()).decode_utf8_lossy().to_string();
 
     let dest_path = match resolve_and_verify_path_for_creation(root_path, &dest_req_path) {
@@ -328,7 +328,7 @@ mod tests {
         let lock_res = handle_lock().await;
         assert_eq!(lock_res.status(), StatusCode::OK);
         assert!(lock_res.headers().get("Lock-Token").is_some());
-
+        
         let unlock_res = handle_unlock().await;
         assert_eq!(unlock_res.status(), StatusCode::NO_CONTENT);
     }

@@ -24,7 +24,7 @@ def patch():
         .unwrap()
 }"""
     content = content.replace(old, new)
-
+    
     with open('src-tauri/src/webdav.rs', 'w') as f:
         f.write(content)
 
