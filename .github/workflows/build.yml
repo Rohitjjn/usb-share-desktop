@@ -1,4 +1,4 @@
-name: Build and Release Tauri App
+name: CI/CD Pipeline
 
 on:
   push:
@@ -16,12 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Rust toolchain
+      - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
@@ -31,35 +26,31 @@ jobs:
         with:
           workspaces: "src-tauri -> target"
 
-      - name: Install Node dependencies
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
         run: npm install
 
-      - name: Run Cargo Check & Tests
+      - name: Run Cargo Tests
         working-directory: src-tauri
-        run: |
-          cargo check
-          cargo test
+        run: cargo test
 
-      - name: Run Clippy
+      - name: Run Cargo Clippy
         working-directory: src-tauri
         run: cargo clippy -- -D warnings
 
       - name: Build Tauri app
         run: npm run tauri build -- --target x86_64-pc-windows-msvc
 
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-installer
-          path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
-          if-no-files-found: ignore
-
-      - name: Upload EXE Artifacts
+      - name: Upload EXE Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   create-release:
     needs: test-and-build
@@ -67,19 +58,11 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
 
     steps:
-      - name: Download Artifacts (MSI)
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-installer
-          path: release-artifacts
-        continue-on-error: true
-
       - name: Download Artifacts (EXE)
         uses: actions/download-artifact@v4
         with:
           name: windows-exe
           path: release-artifacts
-        continue-on-error: true
 
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
