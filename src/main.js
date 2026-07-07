@@ -6,6 +6,7 @@ let currentTab = 'status';
 let isServerRunning = false;
 let sharedRootPath = null;
 let currentPcPath = '/';
+let localServerIpPort = '127.0.0.1:8080';
 
 // Core UI setup
 document.addEventListener('DOMContentLoaded', () => {
@@ -71,6 +72,7 @@ function setupStatusTab() {
                 const status = await invoke('start_local_server', { rootPathStr: sharedRootPath });
                 
                 isServerRunning = true;
+                localServerIpPort = `${status.ip}:${status.port}`;
                 toggleBtn.textContent = 'Stop Server';
                 toggleBtn.classList.remove('primary');
                 toggleBtn.classList.add('danger');
@@ -136,7 +138,7 @@ function setupMyPcTab() {
         const name = prompt("Enter new folder name:");
         if (name && isServerRunning) {
             const targetPath = currentPcPath === '/' ? `/${name}` : `${currentPcPath}/${name}`;
-            await authFetch(`http://127.0.0.1:8080/api/mkdir?path=${encodeURIComponent(targetPath)}`, { method: 'POST' });
+            await authFetch(`http://${localServerIpPort}/api/mkdir?path=${encodeURIComponent(targetPath)}`, { method: 'POST' });
             loadPcFiles(currentPcPath);
         }
     });
@@ -146,7 +148,7 @@ function setupMyPcTab() {
         if (!confirm(`Delete ${selectedPcFiles.size} item(s)?`)) return;
         
         for (const path of selectedPcFiles) {
-            await authFetch(`http://127.0.0.1:8080/api/delete?path=${encodeURIComponent(path)}`, { method: 'POST' });
+            await authFetch(`http://${localServerIpPort}/api/delete?path=${encodeURIComponent(path)}`, { method: 'POST' });
         }
         selectedPcFiles.clear();
         loadPcFiles(currentPcPath);
@@ -158,7 +160,7 @@ function setupMyPcTab() {
             return;
         }
         const paths = Array.from(selectedPcFiles).join(',');
-        const url = `http://127.0.0.1:8080/api/zip?paths=${encodeURIComponent(paths)}`;
+        const url = `http://${localServerIpPort}/api/zip?paths=${encodeURIComponent(paths)}`;
         
         // Use browser download
         const a = document.createElement('a');
@@ -166,7 +168,7 @@ function setupMyPcTab() {
         // We need auth though. Native <a> tag doesn't send Basic Auth unless embedded in URL
         const username = document.getElementById('server-username').textContent;
         const password = document.getElementById('server-password').textContent;
-        a.href = `http://${username}:${password}@127.0.0.1:8080/api/zip?paths=${encodeURIComponent(paths)}`;
+        a.href = `http://${username}:${password}@${localServerIpPort}/api/zip?paths=${encodeURIComponent(paths)}`;
         a.download = "download.zip";
         document.body.appendChild(a);
         a.click();
@@ -193,7 +195,7 @@ async function authFetch(url, options = {}) {
 
 async function loadPcFiles(path) {
     try {
-        const res = await authFetch(`http://127.0.0.1:8080/api/list?path=${encodeURIComponent(path)}`);
+        const res = await authFetch(`http://${localServerIpPort}/api/list?path=${encodeURIComponent(path)}`);
         const files = await res.json();
         
         selectedPcFiles.clear();
